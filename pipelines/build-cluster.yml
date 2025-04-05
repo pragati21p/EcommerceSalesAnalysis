@@ -1,0 +1,53 @@
+# Pipeline for Databricks cluster creation
+
+trigger:
+  branches:
+    include:
+    - master
+  paths:
+    include:
+    - pipelines/config.cluster.json
+    - pipelines/databricks-library-install.sh
+
+stages:
+- stage: "dev"
+  displayName: "Development"
+  dependsOn: []
+  pool:
+    vmImage: "ubuntu-latest"
+  variables:
+    - group: databricks_cli
+
+  jobs:
+    - job: EcommerceAnalysisCluster
+      steps:
+
+        - task: UsePythonVersion@0
+          inputs:
+            versionSpec: "3.8"
+            architecture: "x64"
+
+        - task: ShellScript@2
+          inputs:
+            scriptPath: pipelines/databricks-cli-config.sh
+            args: "$(databricks_host) $(databricks_token)"
+          displayName: "Install and configure the Databricks CLI"
+
+        - task: ShellScript@2
+          inputs:
+            scriptPath: pipelines/databricks-cluster-delete.sh
+            args: "EcommerceCluster"
+          continueOnError: "true"
+          displayName: "Delete previous cluster version (if existing)"
+
+        - task: ShellScript@2
+          inputs:
+            scriptPath: pipelines/databricks-cluster-create.sh
+            args: "EcommerceCluster"
+          displayName: "Create new cluster"
+
+        - task: ShellScript@2
+          inputs:
+            scriptPath: pipelines/databricks-library-install.sh
+            args: "EcommerceCluster"
+          displayName: "Install dependencies"
