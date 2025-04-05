@@ -67,9 +67,37 @@ cicd pipeline
 │   ├── databricks-workspace-import.sh
 ```
 
+### Workflow
+
+Source file _EcommerceAnalysis.py_ does follows:
+- Creates raw tables for Customer, Orders, Products
+- Creates enriched table for customers and products 
+- Create an enriched table which has
+  1. order information 
+  2. Profit rounded to 2 decimal places
+  3. Customer name and country
+  4. Product category and sub category
+- Create an aggregate table that shows profit by 
+  1. Year
+  2. Product Category
+  3. Product Sub Category
+  4. Customer
+- Using SQL output the following aggregates
+  1. Profit by Year
+  2. Profit by Year + Product Category
+  3. Profit by Customer
+  4. Profit by Customer + Year
+
+
 ### Outputs
 
--
+4 stats to be queried:
+- Using SQL output the following aggregates
+    1. Profit by Year
+    2. Profit by Year + Product Category
+    3. Profit by Customer
+    4. Profit by Customer + Year
+
 
 ### Future Enhancements
 
