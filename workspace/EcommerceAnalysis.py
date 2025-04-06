@@ -12,7 +12,7 @@ import pyspark.sql.functions as F
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC #### Read Files and write Delta Tables
+# MAGIC #### Class to Read Files and write Delta Tables
 
 # COMMAND ----------
 
@@ -57,7 +57,7 @@ class LoadEcommerceData():
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC #### Create an enriched table for customers and products
+# MAGIC #### Class to refine data
 
 # COMMAND ----------
 
@@ -196,6 +196,7 @@ if __name__ == "__main__":
 
     readFilesObj = LoadEcommerceData(spark)
 
+    # 1. Create Raw tables
     # Load Products, Orders, Customers Data
     orders_df = readFilesObj.load_json_data(orders_path)
     products_df = readFilesObj.load_csv_data(products_path).cache()
@@ -206,6 +207,7 @@ if __name__ == "__main__":
     readFilesObj.save_as_delta(orders_df, "orders")
     readFilesObj.save_as_delta(customers_df, "customers")
 
+    # 2. Create an enriched table for customers and products
     refineObj = refineData()
     enriched_customers_df = refineObj.convert_columns_to_lowercase(customers_df)
     enriched_customers_df = enriched_customers_df.dropna(subset=["customer_id", "customer_name"]) \
@@ -222,7 +224,11 @@ if __name__ == "__main__":
                                 .dropDuplicates(["product_id"])
 
     readFilesObj.save_as_delta(enriched_products_df, 'refined_products')
+
+    # 3. Create aggregate table/master tale
     createMasterTable(spark, orders_df)
+
+    # 4. Create an aggregate table that shows profit by 4 columns
     profitAnalysis(spark)
 
 # COMMAND ----------
