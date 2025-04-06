@@ -148,7 +148,7 @@ def createMasterTable(spark, orders_df):
         .select(
             col("order_id"), col("order_date"), col("ship_date"), col("ship_mode"), col("quantity"), col("price"), col("discount"), # Order Detail
             F.round(col("profit"),2).alias("profit"), # Profit
-            col("customer_name"), col("country"), # Customer name and country
+            col("customer_id"), col("customer_name"), col("country"), # Customer name and country
             col("category"), col("sub_category") # Product category and sub category
         ).withColumn("order_date", to_date(col("order_date"), "d/M/yyyy")).withColumn("year", year(col("order_date")))
 
@@ -177,7 +177,7 @@ def profitAnalysis(spark):
     detailed_orders_df = spark.read.table("detailed_orders")
 
     # Add year column and compute aggregates
-    agg_df = detailed_orders_df.groupBy("year", "category", "sub_category", "customer_name") \
+    agg_df = detailed_orders_df.groupBy("year", "category", "sub_category", " customer_id", "customer_name") \
         .agg(F.sum("profit").alias("total_profit")) \
         .cache()  # Cache to avoid recomputation
 
@@ -267,10 +267,10 @@ if __name__ == "__main__":
 
 # MAGIC %sql
 # MAGIC
-# MAGIC -- Profit by Customer
-# MAGIC SELECT customer_name, ROUND(SUM(profit), 2) AS total_profit
+# MAGIC -- Profit by Customer (id and name)
+# MAGIC SELECT customer_id, customer_name, ROUND(SUM(profit), 2) AS total_profit
 # MAGIC FROM detailed_orders
-# MAGIC GROUP BY customer_name
+# MAGIC GROUP BY customer_id, customer_name
 # MAGIC ORDER BY total_profit DESC;
 
 # COMMAND ----------
@@ -278,9 +278,9 @@ if __name__ == "__main__":
 # MAGIC %sql
 # MAGIC
 # MAGIC -- Profit by Customer + Year
-# MAGIC SELECT customer_name, year, ROUND(SUM(profit), 2) AS total_profit
+# MAGIC SELECT customer_id, customer_name, year, ROUND(SUM(profit), 2) AS total_profit
 # MAGIC FROM detailed_orders
-# MAGIC GROUP BY customer_name, year
+# MAGIC GROUP BY customer_id, customer_name, year
 # MAGIC ORDER BY total_profit DESC;
 # MAGIC
 
